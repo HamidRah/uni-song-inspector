@@ -1,0 +1,12 @@
+ipython==8.12.3
+ipywidgets==8.1.2
+keras==3.3.3
+keras_tuner==1.4.7
+librosa==0.10.1
+matplotlib==3.8.4
+numpy==1.26.4
+pandas==2.2.2
+scikit_learn==1.4.2
+seaborn==0.13.2
+tensorflow==2.16.1
+tqdm==4.66.2

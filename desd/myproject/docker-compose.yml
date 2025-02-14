@@ -1,0 +1,67 @@
+
+version: '3.8'
+services:
+  db:
+    image: postgres:16.1
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_NAME}
+    ports:
+      - "5432:5432"
+  web:
+    build: .
+    #command: /bin/sh -c "/entrypoint.sh"
+    command: ["/wait-for-it.sh", "db:5432", "--", "/bin/sh", "/entrypoint.sh"]
+    volumes:
+      - .:/usr/src/app
+      - static_volume:/usr/src/app/static
+    depends_on:
+      - db
+      - tensorflow_serving
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+      DEBUG: ${DEBUG}
+      POSTGRES_NAME: ${POSTGRES_NAME}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+    ports:
+      - "8000:8000"
+
+  tailwind:
+    image: node:20.11.1-slim
+    working_dir: /usr/src/app
+    volumes:
+      - .:/usr/src/app
+      - static_volume:/usr/src/app/static
+
+  tensorflow_serving:
+    image: tensorflow/serving
+    volumes:
+      - ./models:/models
+      - ./monitoring_config.txt:/etc/tensorflow_serving/monitoring_config.txt
+    environment:
+      - MODEL_NAME=instrument_model
+      - MODEL_BASE_PATH=/models/instrument_model
+    command:
+      - --model_base_path=/models/instrument_model
+      - --rest_api_port=8501
+      - --model_name=instrument_model
+      - --monitoring_config_file=/etc/tensorflow_serving/monitoring_config.txt
+    ports:
+      - "8501:8501"
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+volumes:
+  static_volume:
+  postgres_data:

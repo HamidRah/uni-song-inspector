@@ -1,0 +1,370 @@
+{% extends "_base.html" %} {% block content %}
+<div
+  class="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-4 dark:bg-grey-300"
+>
+  <div class="mb-4 col-span-full xl:mb-2">
+    <h1 class="mb-4 text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white">
+      User settings
+    </h1>
+    <h3 class="mb-4 text-xl font-semibold dark:text-white">
+      {% if user_profile.is_superuser %}
+        User type: Superuser
+      {% elif user_profile.user_type == 0 %}
+        User type: User
+      {% elif user_profile.user_type == 1 %}
+        User type: Admin
+      {% elif user_profile.user_type == 2 %}
+        User type: ML Engineer
+      {% elif user_profile.user_type == 3 %}
+        User type: Accountant
+      {% else %}
+        User type: Unknown
+      {% endif %}
+    </h3>
+  </div>
+  <!-- Right Content -->
+
+  <div class="col-span-full xl:col-auto">
+    <div class="p-4 mb-4 bg-white border boder-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+      <h3 class="mb-4 text-xl font-semibold dark:text-white">Tokens:</h3>
+      <p class="mb-4 text-xl font-semibold dark:text-white">{{ token_count }}</p>
+    </div>
+    <div class="p-4 mb-4 bg-white border boder-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+      <h3 class="mb-4 text-xl font-semibold dark:text-white">Change your password</h3>
+      <a href="{% url 'password_change' %}" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Change Password</a>
+    </div>
+
+
+    {% if user_profile.user_type == 3 or user.is_superuser or user_profile.user_type == 1%}
+    <div
+      class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800"
+    >
+
+      <h3 class="mb-4 text-xl font-semibold dark:text-white">
+        Generate Financial Statement
+      </h3>
+      <form
+        action="/generate-statement"
+        method="post"
+        class="flex flex-col space-y-4"
+      >
+        <div class="flex flex-col">
+          <label
+            for="startDate"
+            class="text-sm font-medium text-gray-600 dark:text-gray-300"
+            >From Date</label
+          >
+          <input
+            type="date"
+            id="startDate"
+            name="startDate"
+            class="p-2 border rounded-md"
+            required
+          />
+        </div>
+        <div class="flex flex-col">
+          <label
+            for="endDate"
+            class="text-sm font-medium text-gray-600 dark:text-gray-300"
+            >To Date</label
+          >
+          <input
+            type="date"
+            id="endDate"
+            name="endDate"
+            class="p-2 border rounded-md"
+            required
+          />
+        </div>
+        <a href="{% url 'generate_pdf' %}"
+        <button
+          type="submit"
+          class="p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+        >
+          Download Financial Statement
+        </button>
+        </a>
+      </form>
+      {% comment %} REPLACE WITH LOGIC TO CHECK PROPER USER {% endcomment %}
+    </div>
+    {% endif %}
+    {% if user_profile.user_type == 2 or user.is_superuser  or user_profile.user_type == 1%}
+
+    <div
+      class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800"
+    >
+      <h3 class="mb-4 text-xl font-semibold dark:text-white">
+        Upload Machine Learning Model
+      </h3>
+      <form
+        action="/upload-model"
+        method="post"
+        enctype="multipart/form-data"
+        class="flex flex-col space-y-4"
+      >
+        <div class="flex flex-col">
+          <label
+            for="modelFile"
+            class="text-sm font-medium text-gray-600 dark:text-gray-300"
+            >Select Model File</label
+          >
+          <input
+            type="file"
+            id="modelFile"
+            name="modelFile"
+            accept=".h5, .hdf5, .pkl"
+            class="p-2 border rounded-md"
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          class="p-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+        >
+          Upload File
+        </button>
+      </form>
+    </div>
+    {% comment %} AI content {% endcomment %} {% endif%}
+  </div>
+  <div class="col-span-2">
+    {% if user_profile.user_type == 2 or user.is_superuser %}
+  <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+    <h3 class="mb-4 text-xl font-semibold dark:text-white">Model Performance</h3>
+    <a href="{% url 'model_performance' %}" class="text-blue-500 hover:underline">View Model Performance</a>
+  </div>
+  {% endif %}
+    <div
+      class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800"
+    >
+      <h3 class="mb-4 text-xl font-semibold dark:text-white">
+        General information
+      </h3>
+      <div class="grid grid-cols-6 gap-6">
+        <div class="col-span-6 sm:col-span-3">
+          <label
+            for="first-name"
+            class="block mb-2 text-sm font-medium text-grey-300 dark:text-white"
+            >Email Address</label
+          >
+          <span
+            type="text"
+            name="first-name"
+            id="first-name"
+            class="shadow-sm bg-gray-50 border border-gray-300 text-grey-300 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            placeholder="example@gmail.com"
+            required
+            {% if user.email %}
+              <span>{{ user.email }}</span>
+            {% else %}
+              <span>No email address on record.</span>
+            {% endif %}
+
+        </div>
+        <div class="col-span-6 sm:col-span-3">
+          <label
+            for="last-name"
+            class="block mb-2 text-sm font-medium text-grey-300 dark:text-white"
+            >Login</label
+          >
+          <span
+            type="text"
+            name="last-name"
+            id="last-name"
+            class="shadow-sm bg-gray-50 border border-gray-300 text-grey-300 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            placeholder="Green"
+            required
+            >{{ user.username }}</span
+          >
+        </div>
+      </div>
+    </div>
+
+  <!-- Modal -->
+  <div id="myModal" class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <!-- Modal content with scrolling enabled -->
+    <div class="modal-body bg-white dark:bg-gray-800 rounded-lg p-4 md:p-6 w-full max-w-2xl">
+      <h3 class="text-2xl font-bold mb-4">Predictions:</h3>
+      <ul id="predictionList" class="space-y-2"></ul>
+      <button onclick="closeModal()" class="mt-4 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">Close</button>
+    </div>
+  </div>
+
+    <div
+      class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800"
+    >
+      <h3 class="mb-4 text-xl font-semibold dark:text-white">User History</h3>
+      <table
+        class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400"
+      >
+        <thead
+          class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
+        >
+          <tr>
+            <th scope="col" class="px-6 py-3">Date</th>
+            <th scope="col" class="px-6 py-3">Action</th>
+            <th scope="col" class="px-6 py-3">Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in user_data %}
+
+          <tr
+            class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700"
+          >
+            <th
+              scope="row"
+              class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+            >
+{{entry.date}}            </th>
+            <td class="px-6 py-4">{{entry.action}}</td>
+            <td class="px-6 py-4">
+              <a
+                href="#"
+                class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                >{{entry.file}}</a
+              >
+              {% if entry.description %}
+              <button type="button" class="ml-4 px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600" onclick="showModal('{{entry.description|join:'\n'}}')">
+                Show Results
+              </button>
+              {% endif %}
+            </td>
+          </tr>
+          {%endfor%}
+        </tbody>
+      </table>
+    </div>
+
+
+
+{% if 1 %} {% comment %} REPLACE WITH LOGIC TO CHECK PROPER USER {% endcomment %}
+{% if user_profile.user_type == 2 or user.is_superuser %}
+<div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+  <h3 class="mb-4 text-xl font-semibold dark:text-white">Application Logs</h3>
+  <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+      <tr>
+        <th scope="col" class="px-6 py-3">Date</th>
+        <th scope="col" class="px-6 py-3">Action</th>
+        <th scope="col" class="px-6 py-3">User ID</th>
+        <th scope="col" class="px-6 py-3">Status</th>
+        <th scope="col" class="px-6 py-3">Feedback</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for entry in admin_data %}
+      <tr class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700">
+        <td scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+          {{entry.date}}
+        </td>
+        <td class="px-6 py-4">
+          <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">{{entry.action}}</a>
+          {% if entry.description %}
+            <button type="button" class="ml-4 px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600" onclick="showModal('{{entry.description|join:'\n'}}')">
+            Show Results
+            </button>
+          {% endif %}
+        </td>
+        <td class="px-6 py-4">{{entry.user}}</td>
+        <td class="px-6 py-4">{{entry.status}}</td>
+        <td class="px-6 py-4">
+          {% if entry.feedback is not None %}
+            {% if entry.feedback %}
+              <span class="text-green-500">Liked</span>
+            {% else %}
+              <span class="text-red-500">Disliked</span>
+            {% endif %}
+          {% else %}
+            N/A
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+
+    {% if user.is_superuser  or user_profile.user_type == 1 %}
+  <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+    <h3 class="mb-4 text-xl font-semibold dark:text-white">
+      User Management
+    </h3>
+    <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+      <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+        <tr>
+          <th scope="col" class="px-6 py-3">Username</th>
+          <th scope="col" class="px-6 py-3">User Type</th>
+          <th scope="col" class="px-6 py-3">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user_profile in all_user_profiles %}
+        <tr class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700">
+          <td class="px-6 py-4">{{ user_profile.user.username }}</td>
+          <td class="px-6 py-4">
+            {% if user_profile.is_superuser %}
+            Superuser
+            {% elif user_profile.user_type == 1 %}
+            Admin
+            {% elif user_profile.user_type == 2 %}
+            ML Engineer
+            {% elif user_profile.user_type == 3 %}
+            Accountant
+            {% else %}
+              User
+            {% endif %}
+          </td>
+          <td class="px-6 py-4">
+            <form action="{% url 'change_user_type' user_profile.user.id %}" method="post">
+              {% csrf_token %}
+              <select name="user_type">
+                <option value="0">User</option>
+                <option value="1">Admin</option>
+                <option value="2">ML Engineer</option>
+                <option value="3">Accountant</option>
+              </select>
+              <button type="submit" class="p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+                Change User Type
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+{% endif %}
+    {% endif %} {% comment %} Admin page functionality end {% endcomment %}
+  </div>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+  function showModal(predictions, action) {
+    var predictionList = document.getElementById('predictionList');
+    predictionList.innerHTML = '';
+  
+    // Split the predictions string into an array
+    var predictionsArray = predictions.split(', ');
+  
+    // Iterate over the predictionsArray and create list items
+    predictionsArray.forEach(function(prediction) {
+      var li = document.createElement('li');
+      li.innerHTML = prediction;
+      li.className = 'bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-md';
+      predictionList.appendChild(li);
+    });
+  
+    document.getElementById('myModal').classList.remove('hidden');
+  }
+  
+  function closeModal() {
+    document.getElementById('myModal').classList.add('hidden');
+  }
+</script>
+{% endblock scripts %}

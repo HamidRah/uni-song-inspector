@@ -1,0 +1,231 @@
+{% extends "_base.html" %}
+
+{% block content %}
+  <section class="bg-white dark:bg-gray-900">
+    <script src="https://unpkg.com/wavesurfer.js"></script>
+
+    <div class="gap-16 items-center py-8 px-4 mx-auto max-w-screen-xl lg:grid lg:grid-cols-2">
+        <div class="font-light text-gray-500 sm:text-lg dark:text-gray-400">
+            <h2 class="mb-4 text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white">An Intelligent System for Instrument Detection</h2>
+            <p class="mb-4">*placeholder input* We present to you a intelligent system for instrument detection. Using audio processing techinques and a convolutionsal
+              neural network we are able to classify instruments used in a song. other exciting words that might catch peoples attention and make them use our product.
+              To use our service upload an mp3 file below.
+              *placeholder input*
+            </p>
+        </div>
+        <div class="grid gap-4 mt-8">
+          {% load static %}
+            <img class="w-240 h-60 rounded-lg" src="{% static 'src/images/0_IPKn3dedq86U4UqP.png' %}" alt="CNN for audio">
+        </div>
+    </div>
+
+    {% if token_count > 0 %}
+    <div class="gap-16 items-center py-8 px-4 mx-auto max-w-screen-xl lg:grid lg:grid-cols-2">
+      <form enctype="multipart/form-data" method="post" id="uploadForm">
+        {% csrf_token %}
+        {{ form.audio_file }}
+        <a href="/" class="text-gray-800 bg-white hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-300 dark:hover:bg-gray-400 dark:focus:ring-gray-500 dark:border-gray-500">
+          Clear</a>
+        <button type="submit" id="runAlgorithmButton"  class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">
+          Run Algorithm
+        </button>
+      </form>
+    </div>
+    {% else %}
+    <div class="gap-16 items-center py-8 px-4 mx-auto max-w-screen-xl lg:grid lg:grid-cols-2">
+      <div class="font-light text-gray-500 sm:text-lg dark:text-gray-400">
+        <h2 class="mb-4 text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white">Tokens required</h2>
+        <p class="mb-4">You require more tokens to use this service</p>
+        <button class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">
+          <a href="{% url 'pricing' %}">Buy Tokens</a>
+        </button>
+      </div>
+    </div>
+    {% endif %}
+
+
+    <div id="player" class="py-8 px-4 mx-auto max-w-screen-xl lg:py-8 hidden">
+      <div id="waveform" class="w-full h-32 m-4"></div>
+      <button id="playButton" class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 w-full" disabled>Play</button>
+    </div>
+    
+    
+    {% if predictions %}
+<div id="predictions" class="py-8 px-4 mx-auto max-w-screen-xl">
+  <h3 class="text-2xl font-bold mb-4">{{ file_name }} Predictions:</h3>
+  <form method="post" action="{% url 'submit_feedback' %}">
+    {% csrf_token %}
+    <input type="hidden" name="file_name" value="{{ file_name }}">
+    <ul id="predictionList" class="space-y-2">
+      {% for prediction in predictions %}
+      <li class="bg-gray-100 dark:bg-gray-800 px-4 py-2 rounded-md" style="white-space: pre-line;">
+        {{ prediction|safe }}
+        <input type="hidden" name="prediction" value="{{ prediction }}">
+        <div class="mt-2">
+          <label>
+            <input type="radio" name="feedback" value="true" required>
+            Like
+          </label>
+          <label class="ml-4">
+            <input type="radio" name="feedback" value="false">
+            Dislike
+          </label>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    <button type="submit" class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+      Submit Feedback
+    </button>
+  </form>
+</div>
+{% endif %}
+  </section>
+{% endblock content %}
+
+{% block scripts %}
+
+  <script>
+function submitFeedback(prediction, liked) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', '/submit_feedback', true);
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+      xhr.send('prediction=' + encodeURIComponent(prediction) + '&liked=' + liked);
+    }
+
+
+
+function loadAudioFile(event) {
+    var file = event.target.files[0];
+    if (file) {
+        wavesurfer.loadBlob(file);
+        document.getElementById('player').classList.remove('hidden');
+        wavesurfer.on('ready', function () {
+            document.getElementById('playButton').disabled = false;
+
+            // After player is loaded, make an AJAX request to create a log
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/log_fileupload', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify({
+                'action': 'UPLOAD',
+                'status': 'success',
+                'file': file.name,
+                'description': 'File uploaded and player loaded'
+            }));
+        });
+    }
+}
+
+    function submitForm() {
+        var form = document.getElementById('uploadForm');
+        var formData = new FormData(form);
+        formData.append('audio_file', document.getElementById('audioFileInput').files[0]);
+        fetch('/', {method: 'POST', body: formData, headers: {'X-CSRFToken': getCookie('csrftoken')}})
+        .then(response => response.text())
+        .then(html => {
+            document.body.innerHTML = html;
+            initializeWaveSurfer();
+            initializeEventListeners();
+        })
+        .catch(error => console.error('Error submitting form:', error));
+    }
+
+    // Function to get the CSRF token
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Function to clear predictions and reset WaveSurfer
+    function clearFormAndPredictions() {
+        // Clear predictions div
+        var predictionsDiv = document.getElementById('predictions');
+        if (predictionsDiv) {
+            predictionsDiv.innerHTML = '';
+            predictionsDiv.classList.add('hidden');
+        }
+        
+        // Reset WaveSurfer
+        if (window.wavesurfer) {
+            wavesurfer.empty();
+            document.getElementById('playButton').disabled = true;
+        }
+    }
+
+
+    function initializeWaveSurfer() {
+      window.wavesurfer = WaveSurfer.create({
+          container: '#waveform',
+          waveColor: 'gray',
+          progressColor: '#f9f1f1'
+      });
+
+      wavesurfer.on('play', function () {
+          document.getElementById('playButton').textContent = 'Stop';
+      });
+
+      wavesurfer.on('pause', function () {
+          document.getElementById('playButton').textContent = 'Play';
+      });
+
+      document.getElementById('playButton').addEventListener('click', function () {
+          wavesurfer.playPause();
+          this.textContent = wavesurfer.isPlaying() ? 'Stop' : 'Play';
+      });
+  }
+
+    document.addEventListener('DOMContentLoaded', function() {
+    initializeWaveSurfer();
+    initializeEventListeners();
+  });
+
+    function initializeEventListeners() {
+        document.getElementById('runAlgorithmButton').addEventListener('click', function() {
+            if (document.getElementById('audioFileInput').files.length > 0) {
+                submitForm();
+            } else {
+                alert('Please select a file to upload.');
+            }
+        });
+
+        document.getElementById('audioFileInput').addEventListener('change', function(event) {
+            loadAudioFile(event);
+        });
+
+        // Function to reset the form and clear the predictions
+        document.getElementById('uploadForm').addEventListener('reset', function() {
+            clearFormAndPredictions();
+        });
+
+        var likeBtns = document.querySelectorAll('.like-btn');
+      var dislikeBtns = document.querySelectorAll('.dislike-btn');
+
+      likeBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var prediction = this.dataset.prediction;
+          submitFeedback(prediction, true);
+        });
+      });
+
+      dislikeBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var prediction = this.dataset.prediction;
+          submitFeedback(prediction, false);
+        });
+      });
+    };
+
+  </script>
+
+{% endblock scripts %}

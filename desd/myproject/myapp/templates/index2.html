@@ -1,0 +1,41 @@
+{% extends "_base.html" %}
+
+{% block content %}
+  <section class="bg-white dark:bg-gray-900">
+    <div class="gap-16 items-center py-8 px-4 mx-auto max-w-screen-xl lg:grid lg:grid-cols-2 lg:py-16 lg:px-6">
+        <div class="font-light text-gray-500 sm:text-lg dark:text-gray-400">
+            <h2 class="mb-4 text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white">An Intelligent System for Instrument Detection</h2>
+            <p class="mb-4">*placeholder input* We present to you a intelligent system for instrument detection. Using audio processing techinques and a convolutionsal 
+              neural network we are able to classify instruments used in a song. other exciting words that might catch peoples attention and make them use our product. 
+              To use our service upload an mp3 file below.
+              *placeholder input*
+            </p>
+        </div>
+        <div class="grid gap-4 mt-8">
+          {% load static %}
+            <img class="w-240 h-60 rounded-lg" src="{% static 'src/images/0_IPKn3dedq86U4UqP.png' %}" alt="CNN for audio">
+        </div>
+    </div>
+    <section class="bg-white dark:bg-gray-900">
+        <div class="py-8 px-4 mx-auto max-w-screen-xl text-center lg:py-16 lg:px-6">
+            <div class="mx-auto max-w-screen-sm">
+                <h2 class="mb-4 text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white">
+                    Want use to our service?
+                </h2>
+                <p class="mb-8 font-light text-gray-500 lg:mb-16 sm:text-xl dark:text-gray-400">
+                    <a href="{% url 'register' %}" class="inline-flex items-center font-medium text-primary-600 hover:text-primary-800 dark:text-primary-500 dark:hover:text-primary-700">Sign up</a>
+                    or <a href="{% url 'login' %}" class="inline-flex items-center font-medium text-primary-600 hover:text-primary-800 dark:text-primary-500 dark:hover:text-primary-700">Login!</a> 
+                    Choose one of our exceptionally well priced payment offers and enjoy our service to it's fullest!                 
+                </p>
+            </div>
+        </div>
+    </section>
+{% comment %} <section class="bg-white dark:bg-gray-900">
+    <div class="gap-4 items-center py-8 px-4 mx-auto max-w-screen-xl lg:grid lg:grid-cols-2 lg:py-16 lg:px-6 cursor-not-allowed">
+      <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 cursor-not-allowed" id="file_input" type="file" disabled>
+      <button type="button" class="text-white bg-gray-800 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:focus:ring-gray-700 dark:border-gray-700 cursor-not-allowed" disabled>Run Algorithm</button>
+    </div> {% endcomment %}
+</section>
+
+  
+{% endblock content %}
